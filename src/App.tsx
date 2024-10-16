@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import { exchangeTokens } from './services/TokenExchangeService';
 
 const App: React.FC = () => {
     const [amount, setAmount] = useState('');
+    const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null); // Corrected here
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.ethereum) {
+            const { ethers } = require('ethers');
+            const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+            setProvider(newProvider);
+        } else {
+            console.error('Please install MetaMask!');
+            alert('MetaMask is not installed. Please install it to use this application.');
+        }
+    }, []);
 
     const handleExchange = async () => {
+        if (!provider) {
+            alert('Ethereum provider is not initialized.');
+            return;
+        }
+        
         try {
             await exchangeTokens(amount);
             alert('Tokens exchanged successfully!');

@@ -1,6 +1,7 @@
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
-const contractAddress = "YOUR_CONTRACT_ADDRESS"; // Replace with your contract address
+
+const contractAddress = "0x327dD35f706b7D204ef836AcDee828c5D5FCdC33"; // Replace with your contract address
 const abi = [
 	{
 		"inputs": [
@@ -264,10 +265,31 @@ const abi = [
 ];
 
 export const exchangeTokens = async (amountA: string) => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // Check if Ethereum provider is available
+    if (!window.ethereum) {
+        console.error("Ethereum provider not found. Please install MetaMask.");
+        return;
+    }
+
+    // Create a Web3 provider
+	const { ethers } = require('ethers');
+    const provider = new ethers.provider.Web3Provider(window.ethereum);
+
+    // Request account access
+    await provider.send("eth_requestAccounts", []);
+    
+    // Get the signer
     const signer = provider.getSigner();
+
+    // Create the contract instance
     const contract = new ethers.Contract(contractAddress, abi, signer);
 
-    const tx = await contract.exchange(ethers.utils.parseUnits(amountA, 18));
-    await tx.wait();
+    try {
+        // Call the exchange function
+        const tx = await contract.exchange(ethers.utils.parseUnits(amountA, 18));
+        await tx.wait();  // Wait for the transaction to be mined
+        console.log("Transaction successful:", tx);
+    } catch (error) {
+        console.error("Transaction failed:", error);
+    }
 };
